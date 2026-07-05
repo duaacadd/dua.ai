@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dua.ai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'DuaHandwriting';
+      src: url('DuacaddHandwriting-Regular.otf') format('opentype');
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #f5d6e8 0%, #e8d5f5 50%, #d4b8f0 100%);
+      background-attachment: fixed;
+      color: #3d2c4e;
+    }
+
+    /* ── COUNTDOWN PAGE ── */
+    #countdownPage {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    #countdownPage.active { display: flex; }
+
+    .countdown-logo {
+      font-family: 'Poppins', sans-serif;
+      font-size: 52px; font-weight: 700;
+      letter-spacing: -2px; margin-bottom: 8px;
+    }
+    .countdown-logo .l1 { color: #b06ab3; }
+    .countdown-logo .l2 { color: #c47fc9; }
+    .countdown-logo .l3 { color: #9b5de5; }
+    .countdown-logo .l4 { color: #b06ab3; }
+    .countdown-logo .l5 { color: #c47fc9; }
+    .countdown-logo .l6 { color: #9b5de5; }
+
+    .countdown-subtitle {
+      font-size: 15px; color: #9b7bb5; margin-bottom: 48px; font-weight: 300;
+    }
+
+    .countdown-label {
+      font-size: 13px; color: #b09bc5; text-transform: uppercase;
+      letter-spacing: 0.12em; margin-bottom: 20px; font-weight: 500;
+    }
+
+    .countdown-timer {
+      display: flex; gap: 20px; justify-content: center;
+      margin-bottom: 48px; flex-wrap: wrap;
+    }
+    .countdown-unit {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255,255,255,0.8);
+      border-radius: 20px; padding: 20px 24px;
+      min-width: 90px;
+    }
+    .countdown-number {
+      font-size: 42px; font-weight: 700; color: #7c3aed;
+      line-height: 1; display: block;
+    }
+    .countdown-unit-label {
+      font-size: 11px; color: #b09bc5; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-top: 6px; display: block;
+    }
+
+    .countdown-message {
+      font-size: 16px; color: #7a5c9a; max-width: 420px;
+      line-height: 1.8; font-weight: 300;
+      background: rgba(255,255,255,0.45);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255,255,255,0.7);
+      border-radius: 20px; padding: 28px 32px;
+    }
+    .countdown-message strong { font-weight: 600; color: #7c3aed; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 24px;
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.5);
+    }
+    .nav-logo {
+      font-family: 'Poppins', sans-serif;
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px; cursor: pointer;
+    }
+    .nav-logo .l1 { color: #b06ab3; }
+    .nav-logo .l2 { color: #c47fc9; }
+    .nav-logo .l3 { color: #9b5de5; }
+    .nav-logo .l4 { color: #b06ab3; }
+    .nav-logo .l5 { color: #c47fc9; }
+    .nav-logo .l6 { color: #9b5de5; }
+
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 8px 16px; border-radius: 20px; font-size: 14px;
+      cursor: pointer; border: none; background: none; color: #7a5c9a;
+      font-family: 'Poppins', sans-serif; transition: background 0.15s; font-weight: 500;
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.5); }
+    .nav-tab.active { background: rgba(255,255,255,0.7); color: #7c3aed; }
+
+    /* ── PAGES ── */
+    .page { display: none; flex: 1; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* ── HOME ── */
+    .hero {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 0 16px 100px;
+    }
+    .logo {
+      font-family: 'Poppins', sans-serif;
+      font-size: 80px; font-weight: 700; letter-spacing: -3px;
+      margin-bottom: 4px; line-height: 1;
+    }
+    .logo .l1 { color: #b06ab3; }
+    .logo .l2 { color: #c47fc9; }
+    .logo .l3 { color: #9b5de5; }
+    .logo .l4 { color: #b06ab3; }
+    .logo .l5 { color: #c47fc9; }
+    .logo .l6 { color: #9b5de5; }
+
+    .tagline { font-size: 14px; color: #9b7bb5; margin-bottom: 36px; font-weight: 400; }
+
+    .search-wrap { width: 100%; max-width: 560px; margin-bottom: 20px; }
+    .search-bar {
+      display: flex; align-items: center;
+      border: 1.5px solid rgba(255,255,255,0.8); border-radius: 30px;
+      padding: 12px 20px; gap: 10px;
+      background: rgba(255,255,255,0.65); backdrop-filter: blur(8px);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .search-bar:focus-within {
+      box-shadow: 0 4px 20px rgba(176,106,179,0.25); border-color: #c47fc9;
+      background: rgba(255,255,255,0.85);
+    }
+    .search-bar svg { color: #b06ab3; flex-shrink: 0; }
+    .search-bar input {
+      flex: 1; border: none; outline: none; font-size: 16px; color: #3d2c4e;
+      background: transparent; font-family: 'Poppins', sans-serif;
+    }
+    .search-bar input::placeholder { color: #c4a8d8; }
+
+    .btn-row { display: flex; gap: 10px; justify-content: center; }
+    .btn {
+      padding: 10px 24px; border-radius: 30px;
+      border: 1.5px solid rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.55); font-size: 14px; color: #7c3aed;
+      cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 500;
+      transition: background 0.15s, box-shadow 0.15s; backdrop-filter: blur(6px);
+    }
+    .btn:hover { background: rgba(255,255,255,0.8); box-shadow: 0 2px 12px rgba(176,106,179,0.2); }
+
+    .spinner {
+      display: none; width: 24px; height: 24px;
+      border: 2px solid rgba(176,106,179,0.2); border-top: 2px solid #b06ab3;
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin: 24px auto 0;
+    }
+    .spinner.visible { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-wrap { width: 100%; max-width: 560px; margin-top: 24px; display: none; }
+    .result-wrap.visible { display: block; }
+    .result-meta { font-size: 12px; color: #b09bc5; margin-bottom: 12px; padding-left: 4px; }
+    .result-card {
+      border: 1.5px solid rgba(255,255,255,0.8); border-radius: 20px;
+      padding: 24px 28px; background: rgba(255,255,255,0.6); backdrop-filter: blur(12px);
+    }
+    .result-source { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .result-favicon {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(135deg, #b06ab3, #9b5de5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .result-domain { font-size: 14px; color: #7a5c9a; font-weight: 500; }
+    .result-subdomain { font-size: 12px; color: #b09bc5; }
+    .result-title { font-size: 18px; color: #7c3aed; font-weight: 600; margin-bottom: 10px; line-height: 1.4; }
+    .result-answer { font-family: 'DuaHandwriting', cursive; font-size: 22px; color: #3d2c4e; line-height: 1.7; }
+    .result-answer.pending { font-family: 'Poppins', sans-serif; font-size: 14px; color: #b09bc5; font-style: italic; }
+    .result-ts { font-size: 11px; color: #c4a8d8; margin-top: 12px; }
+
+    /* ── HISTORY ── */
+    .history-page { padding: 28px 16px; max-width: 680px; margin: 0 auto; width: 100%; }
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .history-header h2 { font-size: 20px; font-weight: 600; color: #5c3d7a; }
+    .live-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9b5de5; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #9b5de5; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+    .qa-list { display: flex; flex-direction: column; gap: 16px; }
+    .qa-card {
+      border: 1.5px solid rgba(255,255,255,0.8); border-radius: 20px;
+      overflow: hidden; background: rgba(255,255,255,0.5); backdrop-filter: blur(10px);
+    }
+    .qa-question { padding: 18px 22px; background: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.6); }
+    .qa-question-label { font-size: 11px; font-weight: 600; color: #b09bc5; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+    .qa-question-text { font-size: 15px; color: #3d2c4e; line-height: 1.5; font-weight: 500; }
+    .qa-question-ts { font-size: 11px; color: #c4a8d8; margin-top: 5px; }
+    .qa-answer { padding: 18px 22px; }
+    .qa-answer-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .qa-answer-label.answered { color: #9b5de5; }
+    .qa-answer-label.pending { color: #e0aacc; }
+    .qa-answer-text { font-family: 'DuaHandwriting', cursive; font-size: 22px; color: #3d2c4e; line-height: 1.7; }
+    .qa-answer-text.pending { font-family: 'Poppins', sans-serif; font-size: 14px; color: #c4a8d8; font-style: italic; }
+    .qa-answer-ts { font-size: 11px; color: #c4a8d8; margin-top: 8px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #c4a8d8; }
+    .refresh-note { font-size: 12px; color: #c4a8d8; text-align: center; margin-top: 20px; }
+
+    /* ── ABOUT ── */
+    .about-page {
+      padding: 48px 24px; max-width: 680px; margin: 0 auto; width: 100%;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .about-card {
+      background: rgba(255,255,255,0.6); backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255,255,255,0.8); border-radius: 24px;
+      padding: 40px 44px; width: 100%; position: relative;
+    }
+    .about-hearts {
+      font-size: 28px; text-align: center; margin-bottom: 24px; letter-spacing: 6px;
+    }
+    .about-title {
+      font-size: 13px; font-weight: 600; color: #b09bc5;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      text-align: center; margin-bottom: 28px;
+    }
+    .about-body {
+      font-family: 'DuaHandwriting', cursive;
+      font-size: 24px; color: #3d2c4e; line-height: 1.9;
+      text-align: left;
+    }
+    .about-signature {
+      font-family: 'DuaHandwriting', cursive;
+      font-size: 26px; color: #9b5de5;
+      margin-top: 32px; text-align: right;
+    }
+    .about-date {
+      font-size: 12px; color: #c4a8d8; text-align: right; margin-top: 6px;
+    }
+
+    /* ── CONFETTI ── */
+    #confettiCanvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: rgba(255,255,255,0.3); backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(255,255,255,0.5); color: #9b7bb5; font-size: 13px;
+    }
+    .footer-top { padding: 14px 24px; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.4); padding: 12px 24px; display: flex; gap: 24px; flex-wrap: wrap; }
+    footer a { color: #9b7bb5; text-decoration: none; }
+    footer a:hover { color: #7c3aed; }
+
+    @media (max-width: 600px) {
+      .logo { font-size: 56px; }
+      .about-card { padding: 28px 24px; }
+      .countdown-timer { gap: 12px; }
+      .countdown-unit { min-width: 70px; padding: 16px 16px; }
+      .countdown-number { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<!-- COUNTDOWN PAGE (shown before July 3rd) -->
+<div id="countdownPage">
+  <p class="countdown-subtitle">Something made with love is coming your way 💜</p>
+  <p class="countdown-label">Unlocks in</p>
+  <div class="countdown-timer">
+    <div class="countdown-unit"><span class="countdown-number" id="cdDays">00</span><span class="countdown-unit-label">Days</span></div>
+    <div class="countdown-unit"><span class="countdown-number" id="cdHours">00</span><span class="countdown-unit-label">Hours</span></div>
+    <div class="countdown-unit"><span class="countdown-number" id="cdMins">00</span><span class="countdown-unit-label">Minutes</span></div>
+    <div class="countdown-unit"><span class="countdown-number" id="cdSecs">00</span><span class="countdown-unit-label">Seconds</span></div>
+  </div>
+  <div class="countdown-message">
+    <strong>Hello Mr. Absaar 💜</strong><br><br>
+    I made something special for you.<br>
+    It unlocks at midnight on July 3rd, your special day.<br><br>
+    Until then, just know I love you very much. 🌸
+  </div>
+</div>
+
+<!-- MAIN APP (shown on/after July 3rd) -->
+<div id="mainApp" style="display:none; flex-direction:column; min-height:100vh;">
+
+  <nav>
+    <div class="nav-logo" onclick="showPage('home')">
+      <span class="l1">D</span><span class="l2">u</span><span class="l3">a</span><span class="l4">.</span><span class="l5">a</span><span class="l6">i</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-home" onclick="showPage('home')">Search</button>
+      <button class="nav-tab" id="tab-history" onclick="showPage('history')">My Questions</button>
+      <button class="nav-tab" id="tab-about" onclick="showPage('about')">About 💜</button>
+      <a class="nav-tab" href="game.html">Play 🎮</a>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="logo">
+        <span class="l1">D</span><span class="l2">u</span><span class="l3">a</span><span class="l4">.</span><span class="l5">a</span><span class="l6">i</span>
+      </div>
+      <p class="tagline">Ask Dua anything — she'll get back to you 💌</p>
+      <div class="search-wrap">
+        <div class="search-bar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="queryInput" placeholder="Ask Dua anything..." autocomplete="off" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="doSearch()">Dua Search ✨</button>
+        <button class="btn" onclick="doLucky()">I'm Feeling Lucky 🍀</button>
+      </div>
+      <div class="spinner" id="spinner"></div>
+      <div class="result-wrap" id="resultWrap">
+        <p class="result-meta" id="resultMeta"></p>
+        <div class="result-card">
+          <div class="result-source">
+            <div class="result-favicon">D</div>
+            <div>
+              <div class="result-domain">dua.ai</div>
+              <div class="result-subdomain">dua.ai › answers</div>
+            </div>
+          </div>
+          <div class="result-title" id="resultTitle"></div>
+          <div class="result-answer" id="resultAnswer"></div>
+          <div class="result-ts" id="resultTs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="history-page">
+      <div class="history-header">
+        <h2>Your questions to Dua 💜</h2>
+        <div class="live-badge"><div class="live-dot"></div>Live — updates every 30s</div>
+      </div>
+      <div class="qa-list" id="qaList">
+        <div class="empty-state"><p>No questions yet — go ask Dua something! 💌</p></div>
+      </div>
+      <p class="refresh-note" id="refreshNote"></p>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="page" id="page-about">
+    <div class="about-page">
+      <div class="about-card">
+        <div class="about-hearts">💜🌸💜</div>
+        <div class="about-title">A note from Dua</div>
+        <div class="about-body">
+          Hello my love,<br><br>
+          I know this is a little different from my usual gifts, but one day I just had this idea pop into my head. I must admit I entered into this project with only a vision and no knowledge to actually help me bring it to life. Thankfully for me we live in an age of AI, and with a little learning along the way I made this for you.<br><br>
+          It's very basic, but it's my way of showing that for you I would go to any length, for you I would learn coding.<br><br>
+          You have brought so much into my life and enriched it in a way that no one else has so far. You have given me a best friend, a lover and a sort of mentor all in one person.<br><br>
+          I love you very much and I hope any questions you have, this "search engine" manages to answer them.
+        </div>
+        <div class="about-signature">Yours always, Dua.human 💜</div>
+        <div class="about-date">July 3rd, 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">Pakistan 🇵🇰</div>
+    <div class="footer-bottom">
+      <a href="#">How Dua.ai works</a>
+      <a href="#">Privacy</a>
+      <a href="#">Made with 💜</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const FORM_SUBMIT_URL = "https://docs.google.com/forms/d/1t9tUbhAhbSp9iViM7qkki-AZ_axNFISQzHILtd6Gcwk/formResponse";
+  const FORM_ENTRY_ID   = "entry.1630975485";
+  const SHEET_CSV_URL   = "https://docs.google.com/spreadsheets/d/1nh7zs1taA07l6bennk1b9ikouNHUgduNIMRtqf0QsZ0/export?format=csv&gid=1297939200";
+
+  // ── DATE CHECKS ──
+  function isSpecialDay() {
+    const now = new Date();
+    const m = now.getMonth() + 1;
+    const d = now.getDate();
+    return (m === 7 && d === 3) || (m === 2 && d === 26);
+  }
+
+  function isUnlocked() {
+    if (window.location.search.includes('preview')) return true;
+    const now = new Date();
+    const unlock = new Date('2026-01-01T00:00:00');
+    return now >= unlock;
+  }
+
+  // ── INIT ──
+  function init() {
+    if (isUnlocked()) {
+      document.getElementById('mainApp').style.display = 'block';
+      if (isSpecialDay()) startConfetti();
+    } else {
+      document.getElementById('countdownPage').classList.add('active');
+      startCountdown();
+    }
+  }
+
+  // ── COUNTDOWN ──
+  function startCountdown() {
+    function tick() {
+      const now = new Date();
+      const unlock = new Date('2026-01-01T00:00:00');
+      const diff = unlock - now;
+      if (diff <= 0) { location.reload(); return; }
+      const days  = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins  = Math.floor((diff % 3600000) / 60000);
+      const secs  = Math.floor((diff % 60000) / 1000);
+      document.getElementById('cdDays').textContent  = String(days).padStart(2,'0');
+      document.getElementById('cdHours').textContent = String(hours).padStart(2,'0');
+      document.getElementById('cdMins').textContent  = String(mins).padStart(2,'0');
+      document.getElementById('cdSecs').textContent  = String(secs).padStart(2,'0');
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  // ── CONFETTI ──
+  function startConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+    const colors = ['#b06ab3','#c47fc9','#9b5de5','#f5d6e8','#e8d5f5','#ffffff','#ffd6e7'];
+    const pieces = Array.from({length: 120}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      r: Math.random() * 8 + 4,
+      d: Math.random() * 120,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10 - 10,
+      tiltAngle: 0,
+      tiltSpeed: Math.random() * 0.1 + 0.05
+    }));
+
+    let angle = 0;
+    let running = true;
+    setTimeout(() => { running = false; }, 8000);
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      angle += 0.01;
+      pieces.forEach(p => {
+        p.tiltAngle += p.tiltSpeed;
+        p.y += (Math.cos(angle + p.d) + 2);
+        p.x += Math.sin(angle) * 0.8;
+        p.tilt = Math.sin(p.tiltAngle) * 12;
+        ctx.beginPath();
+        ctx.lineWidth = p.r / 2;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4);
+        ctx.stroke();
+        if (p.y > canvas.height) {
+          p.y = -10; p.x = Math.random() * canvas.width;
+        }
+      });
+      if (running) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    draw();
+  }
+
+  // ── PAGE SWITCHING ──
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'history') loadHistory();
+  }
+
+  // ── SEARCH ──
+  document.getElementById('queryInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  function doLucky() {
+    const fun = ["Do you love me?", "What's for dinner tonight?", "Am I your favourite person?", "What's the meaning of life?", "Will you always be my lucky charm?"];
+    document.getElementById('queryInput').value = fun[Math.floor(Math.random() * fun.length)];
+    doSearch();
+  }
+
+  async function doSearch() {
+    const q = document.getElementById('queryInput').value.trim();
+    if (!q) return;
+    document.getElementById('spinner').classList.add('visible');
+    document.getElementById('resultWrap').classList.remove('visible');
+    submitToForm(q);
+    const result = await fetchAnswer(q);
+    document.getElementById('spinner').classList.remove('visible');
+    document.getElementById('resultTitle').textContent = q;
+    document.getElementById('resultMeta').textContent = 'About 1 result (from Dua\'s brain)';
+    if (result && result.answer) {
+      document.getElementById('resultAnswer').className = 'result-answer';
+      document.getElementById('resultAnswer').textContent = result.answer;
+      document.getElementById('resultTs').textContent = 'Asked: ' + result.askedAt + (result.answeredAt ? '  ·  Answered: ' + result.answeredAt : '');
+    } else {
+      document.getElementById('resultAnswer').className = 'result-answer pending';
+      document.getElementById('resultAnswer').textContent = 'Dua has received your question and is thinking... check "My Questions" to see when she replies 💌';
+      document.getElementById('resultTs').textContent = 'Just asked — ' + formatDate(new Date());
+    }
+    document.getElementById('resultWrap').classList.add('visible');
+  }
+
+  function submitToForm(question) {
+    const iframe = document.createElement('iframe');
+    iframe.name = 'hidden_iframe'; iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    const form = document.createElement('form');
+    form.method = 'POST'; form.action = FORM_SUBMIT_URL; form.target = 'hidden_iframe';
+    const field = document.createElement('input');
+    field.type = 'hidden'; field.name = FORM_ENTRY_ID; field.value = question;
+    form.appendChild(field); document.body.appendChild(form); form.submit();
+    setTimeout(() => { document.body.removeChild(form); document.body.removeChild(iframe); }, 3000);
+  }
+
+  async function fetchRows() {
+    const res = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
+    const text = await res.text();
+    return parseCSV(text).slice(1).filter(r => r[1] && r[1].trim());
+  }
+
+  async function fetchAnswer(question) {
+    try {
+      const rows = await fetchRows();
+      const q = question.toLowerCase().trim();
+      for (const row of rows) {
+        if (row[1] && row[1].toLowerCase().trim() === q) {
+          return {
+            answer: row[2] ? row[2].trim() : null,
+            askedAt: row[0] ? formatDate(new Date(row[0])) : '',
+            answeredAt: row[3] ? formatDate(new Date(row[3])) : null
+          };
+        }
+      }
+    } catch(e) { console.warn(e); }
+    return null;
+  }
+
+  let historyInterval = null;
+  async function loadHistory() {
+    if (historyInterval) clearInterval(historyInterval);
+    await renderHistory();
+    historyInterval = setInterval(renderHistory, 30000);
+  }
+
+  async function renderHistory() {
+    const list = document.getElementById('qaList');
+    const note = document.getElementById('refreshNote');
+    try {
+      const rows = await fetchRows();
+      if (!rows.length) {
+        list.innerHTML = '<div class="empty-state"><p>No questions yet — go ask Dua something! 💌</p></div>';
+        return;
+      }
+      list.innerHTML = [...rows].reverse().map(row => {
+        const question   = row[1] ? row[1].trim() : '';
+        const answer     = row[2] ? row[2].trim() : '';
+        const askedAt    = row[0] ? formatDate(new Date(row[0])) : '';
+        const answeredAt = row[3] ? formatDate(new Date(row[3])) : '';
+        const hasAnswer  = answer.length > 0;
+        return `<div class="qa-card">
+          <div class="qa-question">
+            <div class="qa-question-label">Question</div>
+            <div class="qa-question-text">${escHtml(question)}</div>
+            ${askedAt ? `<div class="qa-question-ts">Asked on ${askedAt}</div>` : ''}
+          </div>
+          <div class="qa-answer">
+            <div class="qa-answer-label ${hasAnswer ? 'answered' : 'pending'}">${hasAnswer ? '💜 Dua answered' : '⏳ Waiting for Dua...'}</div>
+            <div class="qa-answer-text ${hasAnswer ? '' : 'pending'}">${hasAnswer ? escHtml(answer) : 'Dua is thinking about this one. Check back soon!'}</div>
+            ${answeredAt ? `<div class="qa-answer-ts">Answered on ${answeredAt}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+      note.textContent = 'Last updated: ' + formatDate(new Date());
+    } catch(e) { note.textContent = 'Could not load — will retry shortly.'; }
+  }
+
+  function formatDate(d) {
+    if (!d || isNaN(d)) return '';
+    return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })
+      + ' at ' + d.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+  }
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function parseCSV(text) {
+    return text.split('\n').map(line => {
+      const cols = []; let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
+        else { cur += c; }
+      }
+      cols.push(cur);
+      return cols;
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
