@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dua.ai — The Journey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @font-face { font-family:'DuaHandwriting'; src:url('DuacaddHandwriting-Regular.otf') format('opentype'); }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(135deg,#f5d6e8 0%,#e8d5f5 50%,#d4b8f0 100%);
+      background-attachment:fixed; min-height:100vh;
+      display:flex; flex-direction:column; align-items:center; color:#3d2c4e;
+    }
+    nav{
+      position:fixed; top:0; left:0; right:0;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 24px;
+      background:rgba(255,255,255,0.35); backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(255,255,255,0.5); z-index:100;
+    }
+    .nav-logo{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;text-decoration:none;}
+    .nav-logo .l1{color:#b06ab3;} .nav-logo .l2{color:#c47fc9;} .nav-logo .l3{color:#9b5de5;}
+    .nav-logo .l4{color:#b06ab3;} .nav-logo .l5{color:#c47fc9;} .nav-logo .l6{color:#9b5de5;}
+    .back-btn{padding:8px 16px;border-radius:20px;font-size:14px;cursor:pointer;border:none;
+      background:rgba(255,255,255,0.6);color:#7a5c9a;font-family:'Poppins',sans-serif;
+      font-weight:500;text-decoration:none;}
+    .game-wrapper{margin-top:80px;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;width:100%;max-width:720px;}
+    .game-title{font-size:22px;font-weight:600;color:#7c3aed;margin-bottom:4px;text-align:center;}
+    .game-subtitle{font-size:13px;color:#9b7bb5;margin-bottom:20px;text-align:center;}
+    .game-container{background:rgba(255,255,255,0.6);backdrop-filter:blur(12px);
+      border:1.5px solid rgba(255,255,255,0.8);border-radius:24px;padding:20px;width:100%;}
+    .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+      font-size:14px;font-weight:500;color:#7a5c9a;}
+    .hud-score{font-size:16px;color:#7c3aed;font-weight:600;}
+    .progress-bar-wrap{height:6px;background:rgba(176,106,179,0.2);border-radius:3px;margin-bottom:10px;overflow:hidden;}
+    .progress-bar{height:100%;background:linear-gradient(90deg,#b06ab3,#9b5de5);border-radius:3px;transition:width 0.3s;width:0%;}
+    canvas{width:100%;border-radius:12px;display:block;image-rendering:pixelated;}
+    .canvas-wrap{position:relative;}
+    .overlay{
+      display:none; position:absolute; top:0;left:0;right:0;bottom:0;
+      background:rgba(255,255,255,0.9); border-radius:12px;
+      flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:20px;
+    }
+    .overlay.show{display:flex;}
+    .overlay-title{font-size:26px;font-weight:700;color:#7c3aed;margin-bottom:8px;}
+    .overlay-msg{font-family:'DuaHandwriting',cursive;font-size:22px;color:#3d2c4e;
+      line-height:1.7;margin-bottom:20px;max-width:340px;}
+    .play-btn{padding:12px 32px;border-radius:30px;
+      background:linear-gradient(135deg,#b06ab3,#9b5de5);
+      color:white;font-size:16px;font-weight:600;border:none;cursor:pointer;
+      font-family:'Poppins',sans-serif;}
+    .instructions{text-align:center;margin-top:12px;font-size:13px;color:#9b7bb5;}
+    .instructions strong{color:#7c3aed;}
+    .music-note{font-size:11px;color:#b09bc5;text-align:center;margin-top:6px;}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="l1">D</span><span class="l2">u</span><span class="l3">a</span><span class="l4">.</span><span class="l5">a</span><span class="l6">i</span>
+  </a>
+  <a class="back-btn" href="index.html">← Back</a>
+</nav>
+
+<div class="game-wrapper">
+  <div class="game-title">The Journey 💜</div>
+  <div class="game-subtitle">Help him reach her — jump over every obstacle!</div>
+  <div class="game-container">
+    <div class="hud">
+      <span>Score: <span class="hud-score" id="scoreDisplay">0</span></span>
+      <span id="progressLabel">Ready to run!</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" height="220"></canvas>
+      <div class="overlay show" id="overlay">
+        <div class="overlay-title">The Journey 💜</div>
+        <div class="overlay-msg">Jump over every obstacle and reach her! 🏃</div>
+        <button class="play-btn" onclick="startGame()">Start Running 💨</button>
+      </div>
+    </div>
+    <div class="instructions"><strong>Space / Tap</strong> to jump &nbsp;·&nbsp; <strong>Double tap</strong> for double jump</div>
+    <div class="music-note" id="musicNote">🎵 A little love song plays when he makes it...</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const W = canvas.width = canvas.offsetWidth;
+const H = canvas.height = 220;
+const GY = H - 45; // ground y
+const P = 3; // pixel size
+
+const overlay = document.getElementById('overlay');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const progressBar = document.getElementById('progressBar');
+const progressLabel = document.getElementById('progressLabel');
+const musicNote = document.getElementById('musicNote');
+
+const TOTAL_OBS = 10;
+let score, cleared, frame, speed, gameWon, girlVisible, girlX, nextObs, animId, hearts, running;
+
+// ── AUDIO (chiptune love song) ──
+let audioCtx = null;
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+function playNote(freq, start, dur, vol) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime + start);
+  gain.gain.setValueAtTime(vol || 0.08, audioCtx.currentTime + start);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + dur);
+  osc.start(audioCtx.currentTime + start);
+  osc.stop(audioCtx.currentTime + start + dur + 0.01);
+}
+
+function playLoveSong() {
+  if (!audioCtx) return;
+  // cute 8-bit melody (original, not TS!)
+  const notes = [
+    [523,0],[659,0.3],[784,0.6],[1047,0.9],[784,1.3],[659,1.6],
+    [523,1.9],[659,2.2],[784,2.5],[880,2.8],[784,3.2],[659,3.5],
+    [698,3.8],[784,4.1],[880,4.4],[1047,4.7],[880,5.1],[784,5.4],
+    [698,5.7],[523,6.0],[659,6.3],[784,6.6],[1047,6.9]
+  ];
+  notes.forEach(([f,t]) => playNote(f, t, 0.25, 0.07));
+}
+
+function playJumpSound() {
+  if (!audioCtx) return;
+  playNote(440, 0, 0.08, 0.05);
+  playNote(660, 0.08, 0.08, 0.05);
+}
+
+// ── PIXEL HELPERS ──
+function px(x,y,w,h,color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.floor(x)*1, Math.floor(y)*1, w*P, h*P);
+}
+
+// ── BOY (pixel art, running) ──
+const boy = { x:70, y:GY, vy:0, onGround:true, jumpsLeft:2, legFrame:0 };
+
+function resetBoy() {
+  boy.y=GY; boy.vy=0; boy.onGround=true; boy.jumpsLeft=2; boy.legFrame=0;
+}
+
+function drawBoy(bx, by, legF) {
+  const x = bx, y = by - 36; // top of boy
+  // Body colours
+  const skin='#f5c5a3', hair='#3d2c4e', shirt='#9b5de5', pants='#3d2c4e', shoe='#5c3d7a', glass='#222';
+
+  // HEAD
+  px(x+3,y,   4,4,skin); // head
+  px(x+2,y-1, 6,2,hair); // hair top
+  px(x+2,y,   1,2,hair); // hair left
+  px(x+7,y,   1,2,hair); // hair right
+
+  // GLASSES
+  px(x+2,y+2, 2,1,glass);
+  px(x+5,y+2, 2,1,glass);
+  px(x+4,y+2, 1,1,glass); // bridge
+
+  // EYES behind glasses
+  px(x+3,y+2,1,1,'#222');
+  px(x+6,y+2,1,1,'#222');
+
+  // BODY (shirt)
+  px(x+2,y+5,  6,6,shirt);
+
+  // ARMS (alternate with legs)
+  const armSwing = legF%2===0;
+  if (armSwing) {
+    px(x,  y+5, 2,3,skin);   // left arm forward
+    px(x+8,y+7, 2,3,skin);   // right arm back
+  } else {
+    px(x,  y+7, 2,3,skin);
+    px(x+8,y+5, 2,3,skin);
+  }
+
+  // LEGS (alternate)
+  const l1 = legF%2===0;
+  if (l1) {
+    px(x+2,y+11,3,5,pants); px(x+2,y+16,3,2,shoe); // left front
+    px(x+5,y+13,3,3,pants); px(x+5,y+15,3,2,shoe); // right back
+  } else {
+    px(x+5,y+11,3,5,pants); px(x+5,y+16,3,2,shoe);
+    px(x+2,y+13,3,3,pants); px(x+2,y+15,3,2,shoe);
+  }
+}
+
+// ── GIRL (pixel art) ──
+function drawGirl(gx, gy) {
+  const x=gx, y=gy-40;
+  const skin='#f5c5a3', hair='#3d2c4e', dress='#c47fc9', shoe='#7c3aed', glass='#222', acc='#f5d6e8';
+
+  // HEAD
+  px(x+3,y,   4,4,skin);
+  px(x+2,y-1, 6,2,hair);  // hair top
+  px(x+1,y,   1,6,hair);  // long hair left
+  px(x+8,y,   1,6,hair);  // long hair right
+  px(x+2,y+4, 1,3,hair);
+  px(x+7,y+4, 1,3,hair);
+
+  // GLASSES
+  px(x+2,y+2,2,1,glass);
+  px(x+5,y+2,2,1,glass);
+  px(x+4,y+2,1,1,glass);
+
+  // EYES
+  px(x+3,y+2,1,1,'#222');
+  px(x+6,y+2,1,1,'#222');
+
+  // SMILE
+  px(x+3,y+3,1,1,'#c47fc9');
+  px(x+5,y+3,1,1,'#c47fc9');
+
+  // BODY (dress top)
+  px(x+2,y+5,6,5,dress);
+
+  // ARMS
+  px(x,  y+6,2,3,skin);
+  px(x+8,y+6,2,3,skin);
+
+  // SKIRT (flare)
+  px(x+1,y+10,8,6,dress);
+  px(x,  y+12,10,4,acc);
+
+  // SHOES
+  px(x+2,y+16,3,2,shoe);
+  px(x+5,y+16,3,2,shoe);
+
+  // HEART above
+  ctx.fillStyle='#b06ab3';
+  ctx.font=`${P*4}px serif`;
+  ctx.fillText('💜',x,y-4);
+}
+
+// ── CATS ──
+function drawFatOrangeCat(cx,cy) {
+  // fat and round
+  const o='#e8843a', od='#c4612a', w='#fff', g='#2d2d2d', p='#f5b5b5';
+  // body (wide)
+  px(cx,cy-8, 14,8,o);
+  px(cx-1,cy-7,16,7,o); // extra wide belly
+  // head
+  px(cx+2,cy-14,10,7,o);
+  // ears
+  px(cx+2,cy-16,3,3,od);
+  px(cx+9,cy-16,3,3,od);
+  // eyes
+  px(cx+4,cy-12,2,2,g);
+  px(cx+8,cy-12,2,2,g);
+  // nose
+  px(cx+6,cy-10,2,1,p);
+  // stripes
+  px(cx+3,cy-8,1,5,od);
+  px(cx+7,cy-8,1,5,od);
+  px(cx+11,cy-8,1,5,od);
+  // tail (curled)
+  px(cx+14,cy-4,3,2,o);
+  px(cx+16,cy-6,2,2,o);
+  // legs (stubby)
+  px(cx+1,cy,3,3,o);
+  px(cx+5,cy,3,3,o);
+  px(cx+9,cy,3,3,o);
+}
+
+function drawTallOrangeCat(cx,cy) {
+  // lean and tall
+  const o='#e8843a', od='#c4612a', g='#2d2d2d', p='#f5b5b5';
+  // long body
+  px(cx+2,cy-18,6,14,o);
+  // head (smaller)
+  px(cx+1,cy-24,8,7,o);
+  // ears (pointy)
+  px(cx+1,cy-27,2,4,od);
+  px(cx+6,cy-27,2,4,od);
+  // eyes
+  px(cx+2,cy-22,2,2,g);
+  px(cx+6,cy-22,2,2,g);
+  // nose
+  px(cx+4,cy-20,1,1,p);
+  // stripes
+  px(cx+3,cy-16,1,8,od);
+  px(cx+6,cy-16,1,8,od);
+  // long tail
+  px(cx+8,cy-10,3,2,o);
+  px(cx+10,cy-13,2,3,o);
+  px(cx+11,cy-15,2,2,o);
+  // slim legs
+  px(cx+2,cy-4,2,4,o);
+  px(cx+6,cy-4,2,4,o);
+}
+
+function drawGreyCat(cx,cy) {
+  // normal grey tabby
+  const gr='#9aa0a6', gd='#6b7278', g='#2d2d2d', p='#f5b5b5', grL='#c4c9cc';
+  // body
+  px(cx+1,cy-10,10,10,gr);
+  // head
+  px(cx+1,cy-17,10,8,gr);
+  // ears
+  px(cx+1,cy-20,3,4,gd);
+  px(cx+8,cy-20,3,4,gd);
+  // eyes (green!)
+  px(cx+3,cy-14,2,2,'#34a853');
+  px(cx+7,cy-14,2,2,'#34a853');
+  // nose
+  px(cx+5,cy-12,2,1,p);
+  // stripes
+  px(cx+2,cy-10,1,7,gd);
+  px(cx+5,cy-10,1,7,gd);
+  px(cx+8,cy-10,1,7,gd);
+  // lighter belly
+  px(cx+3,cy-7,6,6,grL);
+  // tail
+  px(cx+11,cy-6,3,2,gr);
+  px(cx+13,cy-9,2,3,gr);
+  // legs
+  px(cx+2,cy,2,4,gr);
+  px(cx+5,cy,2,4,gr);
+  px(cx+8,cy,2,4,gr);
+}
+
+// ── OBSTACLES (pixel art, prettier) ──
+function drawObs(obs) {
+  if (obs.type==='heart') {
+    // floating heart pillars (pink)
+    ctx.fillStyle='#c47fc9';
+    ctx.fillRect(obs.x, GY-obs.h, obs.w*P, obs.h);
+    ctx.fillStyle='#9b5de5';
+    ctx.fillRect(obs.x, GY-obs.h, obs.w*P, P*2);
+    ctx.font=`${P*3}px serif`;
+    ctx.fillText('💜',obs.x,GY-obs.h-2);
+  } else if (obs.type==='star') {
+    // star pillar (gold)
+    ctx.fillStyle='#FBBC05';
+    ctx.fillRect(obs.x, GY-obs.h, obs.w*P, obs.h);
+    ctx.fillStyle='#e8843a';
+    ctx.fillRect(obs.x, GY-obs.h, obs.w*P, P*2);
+    ctx.font=`${P*3}px serif`;
+    ctx.fillText('⭐',obs.x,GY-obs.h-2);
+  } else {
+    // moon pillar (purple)
+    ctx.fillStyle='#9b5de5';
+    ctx.fillRect(obs.x, GY-obs.h, obs.w*P, obs.h);
+    ctx.fillStyle='#b06ab3';
+    ctx.fillRect(obs.x, GY-obs.h, obs.w*P, P*2);
+    ctx.font=`${P*3}px serif`;
+    ctx.fillText('🌙',obs.x,GY-obs.h-2);
+  }
+}
+
+// ── GROUND ──
+function drawGround() {
+  // grass
+  ctx.fillStyle='#c4a8d8';
+  ctx.fillRect(0,GY,W,H-GY);
+  ctx.fillStyle='#b06ab3';
+  ctx.fillRect(0,GY,W,P*2);
+  // pixel flowers scrolling
+  for(let i=0;i<W;i+=24){
+    const fx=(i-frame*speed*0.4+W*10)%W;
+    ctx.fillStyle='#f5d6e8';
+    ctx.fillRect(fx,GY+P*2,P*2,P*2);
+    ctx.fillStyle='#7c3aed';
+    ctx.fillRect(fx+P,GY+P*4,P,P*2);
+  }
+}
+
+// ── PIXEL CLOUDS ──
+let clouds=[{x:120,y:25},{x:340,y:18},{x:560,y:30}];
+function drawClouds() {
+  clouds.forEach(c=>{
+    c.x-=0.3;
+    if(c.x<-60)c.x=W+60;
+    ctx.fillStyle='rgba(255,255,255,0.6)';
+    [[0,0,24,12],[8,-8,16,10],[16,0,24,12]].forEach(([dx,dy,w,h])=>{
+      ctx.fillRect(c.x+dx,c.y+dy,w,h);
+    });
+  });
+}
+
+// ── OBSTACLES array ──
+let obstacles=[];
+function spawnObs() {
+  const types=['heart','star','moon'];
+  const t=types[Math.floor(Math.random()*types.length)];
+  const hs=[6,9,12];
+  const h=hs[Math.floor(Math.random()*hs.length)]*P;
+  obstacles.push({x:W+10, w:4, h, type:t, counted:false});
+}
+
+// ── HEARTS ──
+function spawnHeart() {
+  hearts.push({x:boy.x+Math.random()*40,y:GY-50,vy:-(Math.random()*2+1),alpha:1});
+}
+
+// ── JUMP ──
+function jump() {
+  if(boy.jumpsLeft>0){
+    boy.vy=-13; boy.onGround=false; boy.jumpsLeft--;
+    initAudio(); playJumpSound();
+  }
+}
+
+// ── COLLISION ──
+function checkCollision() {
+  for(const o of obstacles){
+    if(boy.x+22>o.x && boy.x+4<o.x+o.w*P && boy.y>GY-o.h && boy.y-36<GY){
+      return true;
+    }
+  }
+  return false;
+}
+
+// ── MAIN LOOP ──
+function loop() {
+  ctx.clearRect(0,0,W,H);
+
+  // sky bg
+  ctx.fillStyle='rgba(240,225,255,0.5)';
+  ctx.fillRect(0,0,W,H);
+
+  drawClouds();
+  drawGround();
+
+  if(!gameWon){
+    // physics
+    boy.vy+=0.6; boy.y+=boy.vy;
+    if(boy.y>=GY){boy.y=GY;boy.vy=0;boy.onGround=true;boy.jumpsLeft=2;}
+    else boy.onGround=false;
+    if(boy.onGround && running) boy.legFrame= Math.floor(frame/6)%2;
+
+    // obstacles
+    nextObs--;
+    if(nextObs<=0 && cleared<TOTAL_OBS){
+      spawnObs();
+      nextObs=Math.floor(Math.random()*50+65);
+    }
+    obstacles=obstacles.filter(o=>o.x+o.w*P>0);
+    obstacles.forEach(o=>{
+      o.x-=speed;
+      if(o.x+o.w*P<boy.x && !o.counted){
+        o.counted=true; cleared++;
+        score+=10; scoreDisplay.textContent=score;
+        speed=4+cleared*0.18;
+        progressBar.style.width=(cleared/TOTAL_OBS*100)+'%';
+        const msgs=['Just started... 🏃','Keep going! 💨','You got this! 🌸','More than halfway! 💜','Almost there! 🥹','She can see you! 💜'];
+        progressLabel.textContent=msgs[Math.min(Math.floor(cleared/2),msgs.length-1)];
+      }
+      drawObs(o);
+    });
+
+    if(cleared>=TOTAL_OBS && obstacles.length===0 && !girlVisible){
+      girlVisible=true;
+    }
+
+    if(girlVisible){
+      girlX-=speed;
+      // draw cats beside girl
+      drawFatOrangeCat(girlX-52, GY);
+      drawGreyCat(girlX-28, GY);
+      drawTallOrangeCat(girlX+42, GY);
+      drawGirl(girlX, GY);
+      if(girlX<boy.x+50){ gameWon=true; progressBar.style.width='100%'; progressLabel.textContent='He made it! 💜'; }
+    }
+
+    drawBoy(boy.x, boy.y, boy.legFrame);
+
+    if(checkCollision()){ endGame(false); return; }
+
+  } else {
+    // WIN animation
+    drawFatOrangeCat(boy.x+32, GY);
+    drawGreyCat(boy.x+56, GY);
+    drawTallOrangeCat(boy.x+78, GY);
+    drawGirl(boy.x+28, GY);
+    drawBoy(boy.x, GY, 0);
+
+    if(frame%6===0) spawnHeart();
+    hearts=hearts.filter(h=>h.alpha>0);
+    hearts.forEach(h=>{
+      h.y+=h.vy; h.alpha-=0.015;
+      ctx.save(); ctx.globalAlpha=h.alpha;
+      ctx.font='16px serif'; ctx.fillText('💜',h.x,h.y);
+      ctx.restore();
+    });
+    if(frame===100){ endGame(true); return; }
+  }
+
+  frame++;
+  animId=requestAnimationFrame(loop);
+}
+
+function endGame(won) {
+  cancelAnimationFrame(animId);
+  overlay.classList.add('show');
+  if(won){
+    overlay.innerHTML=`
+      <div class="overlay-title">He made it! 🥹💜</div>
+      <div class="overlay-msg">Just like in real life — he always finds his way to her. 🐱🐱🐱</div>
+      <button class="play-btn" onclick="startGame()">Play again 💜</button>`;
+  } else {
+    overlay.innerHTML=`
+      <div class="overlay-title">Oops! 💨</div>
+      <div class="overlay-msg">Every love story has obstacles. Get up and keep running!</div>
+      <button class="play-btn" onclick="startGame()">Try again</button>`;
+  }
+}
+
+function startGame() {
+  cancelAnimationFrame(animId);
+  initAudio();
+  overlay.classList.remove('show');
+  obstacles=[]; cleared=0; score=0; frame=0; speed=4;
+  gameWon=false; girlVisible=false; girlX=W+400;
+  nextObs=80; hearts=[]; running=true;
+  scoreDisplay.textContent='0';
+  progressBar.style.width='0%';
+  progressLabel.textContent='Ready... GO! 🏃';
+  musicNote.textContent='🎵 Complete the journey to hear the love song!';
+  resetBoy();
+
+  // override endGame to play music on win
+  loop();
+}
+
+// patch win music into loop
+const origEndGame = endGame;
+function endGame(won) {
+  if(won){ initAudio(); playLoveSong(); musicNote.textContent='🎵 Playing your love song! 💜'; }
+  origEndGame(won);
+}
+
+// controls
+document.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();if(running)jump();} });
+canvas.addEventListener('click',()=>{ if(running)jump(); });
+canvas.addEventListener('touchstart',e=>{ e.preventDefault();if(running)jump(); },{passive:false});
+
+running=false;
+</script>
+</body>
+</html>
