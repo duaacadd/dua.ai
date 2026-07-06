@@ -136,13 +136,28 @@
       <path id="wire" d="M 30 66 Q 500 150 970 74" fill="none" stroke="#2c2140" stroke-width="3"/>
       <g id="fairy"></g>
 
-      <!-- framed 'bright colorful sunset' behind the couch -->
+      <!-- window looking out on a bright colourful sunset (behind the couch) -->
       <g>
-        <rect x="372" y="150" width="256" height="150" rx="8" fill="#caa24e"/>
-        <rect x="384" y="162" width="232" height="126" rx="4" fill="url(#sunsetG)"/>
-        <circle cx="500" cy="242" r="26" fill="#fff2c8" opacity="0.9"/>
-        <rect x="384" y="252" width="232" height="36" rx="4" fill="#7a4fa0" opacity="0.45"/>
-        <rect x="384" y="236" width="232" height="10" fill="#ffffff" opacity="0.18"/>
+        <!-- outer window frame -->
+        <rect x="360" y="132" width="280" height="182" rx="8" fill="#e7dcc6"/>
+        <rect x="372" y="144" width="256" height="158" rx="3" fill="#3a2c52"/>
+        <!-- glass / sky through the window -->
+        <rect x="378" y="150" width="244" height="146" rx="2" fill="url(#sunsetG)"/>
+        <circle cx="500" cy="236" r="24" fill="#fff2c8" opacity="0.95"/>
+        <!-- distant hills -->
+        <path d="M378 272 q42 -22 84 -6 q52 20 104 -4 q34 -14 56 6 l0 24 l-244 0 z" fill="#6b3f96" opacity="0.5"/>
+        <path d="M378 284 q60 -14 120 -2 q70 12 124 -6 l0 14 l-244 0 z" fill="#4f2c74" opacity="0.55"/>
+        <!-- mullions (window cross bars) -->
+        <rect x="496" y="150" width="8" height="146" fill="#e7dcc6"/>
+        <rect x="378" y="219" width="244" height="8" fill="#e7dcc6"/>
+        <!-- glass shine -->
+        <path d="M398 152 l34 0 l-64 140 l-34 0 z" fill="#ffffff" opacity="0.1"/>
+        <!-- window sill -->
+        <rect x="348" y="308" width="304" height="14" rx="3" fill="#d7c8ac"/>
+        <rect x="352" y="302" width="296" height="8" rx="2" fill="#efe3cc"/>
+        <!-- curtains tied back at the sides -->
+        <path d="M356 130 q14 6 30 4 q-8 70 -2 132 q4 28 -8 52 q-18 -4 -26 -18 q12 -84 6 -170 z" fill="#7c4f9c" opacity="0.95"/>
+        <path d="M644 130 q-14 6 -30 4 q8 70 2 132 q-4 28 8 52 q18 -4 26 -18 q-12 -84 -6 -170 z" fill="#7c4f9c" opacity="0.95"/>
       </g>
 
       <!-- framed 'map of japan' on the left wall -->
