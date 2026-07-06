@@ -8,6 +8,7 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#f5d6e8 0%,#e8d5f5 50%,#d4b8f0 100%);background-attachment:fixed;min-height:100vh;display:flex;flex-direction:column;align-items:center;color:#3d2c4e;}
+    #bgCanvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;image-rendering:pixelated;}
     nav{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:rgba(255,255,255,0.35);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.5);z-index:100;}
     .nav-logo{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;text-decoration:none;}
     .nav-logo .l1{color:#b06ab3;}.nav-logo .l2{color:#c47fc9;}.nav-logo .l3{color:#9b5de5;}.nav-logo .l4{color:#b06ab3;}.nav-logo .l5{color:#c47fc9;}.nav-logo .l6{color:#9b5de5;}
@@ -27,6 +28,7 @@
   </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
 <nav>
   <a class="nav-logo" href="index.html"><span class="l1">D</span><span class="l2">u</span><span class="l3">a</span><span class="l4">.</span><span class="l5">a</span><span class="l6">i</span></a>
   <a class="back-btn" href="index.html">← Home</a>
@@ -57,6 +59,38 @@
   </div>
 </div>
 <script>
+  // ── Pixel (Bayer-dithered) gradient background ──
+  const bg = document.getElementById('bgCanvas');
+  const bgx = bg.getContext('2d');
+  const CELL = 20;                                  // size of each "pixel" block
+  const STOPS = [[247,219,233],[232,213,245],[203,176,234]]; // pink → lavender → purple
+  const BAYER = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]]; // 4×4 ordered dither (0..15)
+  function stopColor(u){                            // interpolate along STOPS, returns [r,g,b]
+    const seg = u*(STOPS.length-1), i = Math.min(Math.floor(seg), STOPS.length-2), f = seg-i;
+    const a = STOPS[i], b = STOPS[i+1];
+    return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+  }
+  function drawBg(){
+    const w = bg.width = Math.ceil(window.innerWidth);
+    const h = bg.height = Math.ceil(window.innerHeight);
+    const cols = Math.ceil(w/CELL), rows = Math.ceil(h/CELL);
+    const LEVELS = 12;                              // quantise into this many bands
+    for(let cy=0; cy<rows; cy++){
+      for(let cx=0; cx<cols; cx++){
+        const t = (cx+cy)/((cols-1)+(rows-1) || 1); // diagonal (135°) position 0..1
+        const v = t*(LEVELS-1);
+        const lo = Math.floor(v), frac = v-lo;
+        const thr = (BAYER[cy&3][cx&3]+0.5)/16;     // dither threshold 0..1
+        const lvl = (frac > thr ? lo+1 : lo);
+        const c = stopColor(Math.min(lvl,LEVELS-1)/(LEVELS-1));
+        bgx.fillStyle = `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+        bgx.fillRect(cx*CELL, cy*CELL, CELL, CELL);
+      }
+    }
+  }
+  drawBg();
+  let bgt; window.addEventListener('resize', ()=>{ clearTimeout(bgt); bgt=setTimeout(drawBg,120); });
+
   // Draw small pixel-art icons (one per game), same pixel style as the games.
   function paint(id, cw, ch, draw){
     const c=document.getElementById(id); if(!c) return;
