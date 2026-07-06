@@ -73,7 +73,7 @@ const progressLabel = document.getElementById('progressLabel');
 const TOTAL_OBS = 10;
 let score=0,cleared=0,frame=0,speed=4,gameWon=false;
 let girlVisible=false,girlX=W+500,nextObs=90;
-let animId,hearts=[],running=false;
+let animId,hearts=[],running=false,winTimer=0;
 
 // ── AUDIO ──
 let audioCtx=null;
@@ -379,7 +379,7 @@ function loop(){
       drawGreyCat(girlX-52,GY);
       drawGirl(girlX,GY);
       drawTallCat(girlX+52,GY);
-      if(girlX<boy.x+60){gameWon=true;progressBar.style.width='100%';progressLabel.textContent='Together! 💜';}
+      if(girlX<boy.x+60){gameWon=true;winTimer=0;progressBar.style.width='100%';progressLabel.textContent='Together! 💜';}
     }
 
     drawBoy(boy.x,boy.y,bob);
@@ -402,7 +402,8 @@ function loop(){
     if(frame%5===0) hearts.push({x:boy.x+20+Math.random()*40,y:GY-70,vy:-(Math.random()*1.5+1),a:1});
     hearts=hearts.filter(h=>h.a>0);
     hearts.forEach(h=>{h.y+=h.vy;h.a-=0.013;ctx.save();ctx.globalAlpha=h.a;ctx.font='18px serif';ctx.fillText('💜',h.x,h.y);ctx.restore();});
-    if(frame===130){endGame(true);return;}
+    winTimer++;
+    if(winTimer>=110){endGame(true);return;}
   }
 
   frame++;
@@ -433,7 +434,7 @@ function startGame(){
   overlay.classList.remove('show');
   obstacles=[];cleared=0;score=0;frame=0;speed=4;
   gameWon=false;girlVisible=false;girlX=W+500;
-  nextObs=90;hearts=[];running=true;
+  nextObs=90;hearts=[];running=true;winTimer=0;
   scoreDisplay.textContent='0';
   progressBar.style.width='0%';
   progressLabel.textContent='Go go go! 🏃';
