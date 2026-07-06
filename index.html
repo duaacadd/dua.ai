@@ -364,8 +364,8 @@
         if (row[1] && row[1].toLowerCase().trim() === q) {
           return {
             answer: row[2] ? row[2].trim() : null,
-            askedAt: row[0] ? formatDate(new Date(row[0])) : '',
-            answeredAt: row[3] ? formatDate(new Date(row[3])) : null
+            askedAt: formatDate(parseSheetDate(row[0])),
+            answeredAt: row[3] && row[3].trim() ? formatDate(parseSheetDate(row[3])) : null
           };
         }
       }
@@ -392,8 +392,8 @@
       list.innerHTML = [...rows].reverse().map(row => {
         const question   = row[1] ? row[1].trim() : '';
         const answer     = row[2] ? row[2].trim() : '';
-        const askedAt    = row[0] ? formatDate(new Date(row[0])) : '';
-        const answeredAt = row[3] ? formatDate(new Date(row[3])) : '';
+        const askedAt    = formatDate(parseSheetDate(row[0]));
+        const answeredAt = formatDate(parseSheetDate(row[3]));
         const hasAnswer  = answer.length > 0;
         return `<div class="qa-card">
           <div class="qa-question">
@@ -417,21 +417,38 @@
     return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })
       + ' at ' + d.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
   }
+  // Google Forms writes timestamps as DD/MM/YYYY HH:MM:SS — parse them explicitly
+  // instead of relying on new Date(), which misreads them as US MM/DD/YYYY.
+  function parseSheetDate(s) {
+    if (!s) return null;
+    const m = s.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (!m) { const d = new Date(s); return isNaN(d) ? null : d; }
+    const [, dd, mm, yyyy, hh, mi, ss] = m;
+    return new Date(+yyyy, +mm - 1, +dd, +hh || 0, +mi || 0, +ss || 0);
+  }
   function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+  // Proper CSV parser: handles quoted fields containing commas, escaped quotes ("")
+  // and embedded newlines (multi-line answers). Tolerant of \r\n and \r line endings.
   function parseCSV(text) {
-    return text.split('\n').map(line => {
-      const cols = []; let cur = '', inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') { inQ = !inQ; }
-        else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
-        else { cur += c; }
-      }
-      cols.push(cur);
-      return cols;
-    });
+    const rows = []; let row = [], cur = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { cur += '"'; i++; } // escaped quote
+          else inQ = false;
+        } else { cur += c; }
+      } else if (c === '"') { inQ = true; }
+      else if (c === ',') { row.push(cur); cur = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++; // swallow \r\n as one break
+        row.push(cur); cur = ''; rows.push(row); row = [];
+      } else { cur += c; }
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows;
   }
 
   // CONFETTI
