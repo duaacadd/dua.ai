@@ -16,15 +16,14 @@
     .page-title{font-size:26px;font-weight:700;color:#7c3aed;text-align:center;margin-bottom:4px;}
     .page-subtitle{font-size:14px;color:#9b7bb5;text-align:center;margin-bottom:28px;}
     .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
-    .game-card{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:rgba(255,255,255,0.6);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,0.8);border-radius:22px;padding:24px;transition:transform .15s, box-shadow .15s;}
-    .game-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(155,93,229,0.22);}
-    .game-icon{font-size:44px;margin-bottom:14px;line-height:1;}
+    .game-card{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:rgba(255,255,255,0.6);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,0.8);border-radius:22px;padding:24px;cursor:pointer;transition:transform .15s, box-shadow .15s;}
+    a.game-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(155,93,229,0.22);}
+    .icon-tile{width:66px;height:66px;border-radius:18px;background:linear-gradient(135deg,#efe1fb,#dcc6f2);border:1px solid rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+    .icon-tile canvas{width:46px;height:46px;image-rendering:pixelated;}
     .game-name{font-size:19px;font-weight:600;color:#7c3aed;margin-bottom:6px;}
-    .game-desc{font-size:13.5px;color:#7a5c9a;line-height:1.55;flex:1;}
-    .game-play{margin-top:16px;align-self:flex-start;padding:8px 22px;border-radius:24px;background:linear-gradient(135deg,#b06ab3,#9b5de5);color:#fff;font-size:14px;font-weight:600;}
-    .soon{opacity:0.6;cursor:default;}
-    .soon:hover{transform:none;box-shadow:none;}
-    .soon .game-play{background:rgba(176,106,179,0.3);color:#7a5c9a;}
+    .game-desc{font-size:13.5px;color:#7a5c9a;line-height:1.55;}
+    .soon{opacity:0.65;cursor:default;}
+    .soon .icon-tile{background:linear-gradient(135deg,#e9e0f4,#ded2ec);}
   </style>
 </head>
 <body>
@@ -33,32 +32,67 @@
   <a class="back-btn" href="index.html">← Home</a>
 </nav>
 <div class="wrap">
-  <div class="page-title">Play 🎮</div>
-  <div class="page-subtitle">A few little games I made for you 💜</div>
+  <div class="page-title">Play</div>
+  <div class="page-subtitle">A few little games I made for you</div>
   <div class="games-grid">
 
     <a class="game-card" href="game.html">
-      <div class="game-icon">🏃💨</div>
+      <div class="icon-tile"><canvas id="iconJourney" width="88" height="88"></canvas></div>
       <div class="game-name">The Journey</div>
       <div class="game-desc">A side-scrolling run. Jump over every obstacle and find your way to her — and the three cats.</div>
-      <span class="game-play">Play ▸</span>
     </a>
 
     <a class="game-card" href="whack.html">
-      <div class="game-icon">🔨💢</div>
+      <div class="icon-tile"><canvas id="iconRivals" width="88" height="88"></canvas></div>
       <div class="game-name">No Rivals Allowed</div>
-      <div class="game-desc">Other lovers keep popping out of holes. Whack them all away to win her heart — just don't bonk Dua!</div>
-      <span class="game-play">Play ▸</span>
+      <div class="game-desc">Other lovers keep popping out of holes. Whack them all away to win her heart — just don't bonk Dua.</div>
     </a>
 
     <div class="game-card soon">
-      <div class="game-icon">✨</div>
+      <div class="icon-tile"><canvas id="iconSoon" width="88" height="88"></canvas></div>
       <div class="game-name">More coming soon</div>
-      <div class="game-desc">Dua's still cooking up more little games for you. Check back later 💜</div>
-      <span class="game-play">Soon</span>
+      <div class="game-desc">Dua's still cooking up more little games for you. Check back later.</div>
     </div>
 
   </div>
 </div>
+<script>
+  // Draw small pixel-art icons (one per game), same pixel style as the games.
+  function paint(id, cw, ch, draw){
+    const c=document.getElementById(id); if(!c) return;
+    const S=c.width/cw, x=c.getContext('2d'); x.imageSmoothingEnabled=false;
+    const px=(cx,cy,w,h,col)=>{ x.fillStyle=col; x.fillRect(cx*S,cy*S,w*S,h*S); };
+    draw(px);
+  }
+  // The Journey: a little runner heading toward a heart
+  paint('iconJourney',22,22,px=>{
+    const D='#5a3d8f', L='#7c5aa8', p='#e07898', R='#c23f61', m='#cdb3e6';
+    px(2,10,3,1,m); px(1,13,4,1,m);          // speed lines
+    px(8,3,3,3,D);                            // head
+    px(7,6,5,4,D);                            // torso
+    px(5,7,2,1,D); px(12,6,2,1,L);           // arms
+    px(7,10,2,4,D); px(10,10,3,3,D);         // striding legs
+    px(6,14,3,1,D); px(12,13,3,1,D);         // feet
+    px(16,4,1,1,p); px(18,4,1,1,p); px(17,4,1,1,R); // heart goal
+    px(16,5,3,1,p); px(17,6,1,1,p);
+  });
+  // No Rivals Allowed: a mallet guarding a heart
+  paint('iconRivals',22,22,px=>{
+    const D='#5a3d8f', L='#7c5aa8', p='#e07898', R='#c23f61', s='#fff2b0';
+    px(4,3,9,4,D); px(4,3,9,1,L);            // mallet head
+    px(8,7,2,6,L);                            // handle
+    px(8,12,3,1,D);                           // grip base
+    px(13,12,1,1,s); px(15,11,1,1,s); px(14,14,1,1,s); // impact sparks
+    px(13,15,1,1,p); px(15,15,1,1,p); px(14,15,1,1,R); // guarded heart
+    px(13,16,3,1,p); px(14,17,1,1,p);
+  });
+  // Coming soon: a soft sparkle
+  paint('iconSoon',22,22,px=>{
+    const a='#b79ad6', b='#cdb3e6';
+    px(10,4,2,14,a); px(4,10,14,2,a);        // 4-point star
+    px(9,9,4,4,b);
+    px(16,5,2,2,b); px(5,15,2,2,b);          // little extra sparkles
+  });
+</script>
 </body>
 </html>
