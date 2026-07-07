@@ -293,8 +293,8 @@
       </div>
     </div>
     <div class="btn-row">
-      <button class="btn" onclick="doSearch()">Dua Search ✨</button>
-      <button class="btn" onclick="doLucky()">I'm Feeling Lucky 🍀</button>
+      <button class="btn" onclick="doSearch()">Dua Search</button>
+      <button class="btn" onclick="doLucky()">I'm Feeling Lucky</button>
     </div>
     <div class="spinner" id="spinner"></div>
     <div class="result-wrap" id="resultWrap">
@@ -794,13 +794,10 @@
       cx.fillStyle='#ffdf8a'; cx.globalAlpha=0.55*pulse;
       for(let k=0;k<8;k++){ const ang=k*Math.PI/4 + t*0.002;
         cx.fillRect(Math.round(x+Math.cos(ang)*r*1.55-P), Math.round(y+Math.sin(ang)*r*1.55-P), P*2, P*2); }
-      // pixel disc with a soft top-left highlight
-      cx.globalAlpha=1;
+      // clean uniform pixel disc (glow + rays do the "sun" reading)
+      cx.globalAlpha=1; cx.fillStyle='#ffe08a';
       for(let yy=-r; yy<=r; yy+=P) for(let xx=-r; xx<=r; xx+=P){
-        if(xx*xx+yy*yy<=r*r){
-          cx.fillStyle = (xx < -r*0.15 && yy < -r*0.15) ? '#fff1bf' : '#ffe08a';
-          cx.fillRect(Math.round(x+xx), Math.round(y+yy), P, P);
-        }
+        if(xx*xx+yy*yy<=r*r) cx.fillRect(Math.round(x+xx), Math.round(y+yy), P, P);
       }
     }
     function drawCloud(cl){
@@ -821,13 +818,13 @@
       frame++;
       if(!document.body.classList.contains('dark')){
         cx.clearRect(0,0,W,H);
-        drawSun(frame);
         for(const cl of clouds){
           cl.x += cl.sp;
           const w = 12*P*cl.sc;
           if(cl.x > W + w) cl.x = -w;   // wrap around
           drawCloud(cl);
         }
+        drawSun(frame);                 // sun on top → always a full circle, clouds pass behind it
         cx.globalAlpha=1;
       }
       requestAnimationFrame(loop);
