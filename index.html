@@ -194,10 +194,70 @@
       .logo { font-size: 56px; }
       .about-card { padding: 28px 20px; }
     }
+
+    /* ── THEME TOGGLE BUTTON ── */
+    .theme-toggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 38px; height: 38px; margin-left: 4px; padding: 0;
+      border: none; border-radius: 50%; cursor: pointer; color: #7a5c9a;
+      background: rgba(255,255,255,0.45);
+      transition: background 0.15s, color 0.15s, transform 0.25s;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,0.75); transform: rotate(-15deg); }
+    .theme-toggle .icon-sun { display: none; }
+
+    /* ── SKY CANVASES (pixel sun/clouds by day, stars/moon by night) — behind all content ── */
+    #daySky, #nightSky {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      transition: opacity 0.6s ease; image-rendering: pixelated;
+    }
+    #daySky { opacity: 1; }
+    #nightSky { opacity: 0; }
+    body.dark #daySky { opacity: 0; }
+    body.dark #nightSky { opacity: 1; }
+
+    /* ── DARK / NIGHT MODE ── */
+    body.dark {
+      background: linear-gradient(135deg, #150e2b 0%, #1e1140 45%, #0d0a1c 100%);
+      color: #e9dcf6;
+    }
+    body.dark nav { background: rgba(30,18,54,0.55); border-bottom: 1px solid rgba(180,150,220,0.18); }
+    body.dark .nav-tab { color: #c6b3e6; }
+    body.dark .nav-tab:hover { background: rgba(255,255,255,0.08); }
+    body.dark .nav-tab.active { background: rgba(155,93,229,0.28); color: #f1e7ff; }
+    body.dark .theme-toggle { color: #ffe9b0; background: rgba(255,255,255,0.10); }
+    body.dark .theme-toggle:hover { background: rgba(255,255,255,0.18); }
+    body.dark .theme-toggle .icon-moon { display: none; }
+    body.dark .theme-toggle .icon-sun { display: inline-flex; }
+    body.dark .tagline { color: #b49ad6; }
+    body.dark .search-bar { background: rgba(40,26,66,0.6); border-color: rgba(180,150,220,0.25); }
+    body.dark .search-bar:focus-within { background: rgba(48,32,78,0.78); border-color: #b47fe0; box-shadow: 0 4px 20px rgba(120,70,180,0.4); }
+    body.dark .search-bar input { color: #e9dcf6; }
+    body.dark .search-bar input::placeholder { color: #8f77b5; }
+    body.dark .btn { background: rgba(48,32,78,0.6); border-color: rgba(180,150,220,0.25); color: #d9c4f5; }
+    body.dark .btn:hover { background: rgba(60,40,96,0.85); box-shadow: 0 2px 12px rgba(120,70,180,0.35); }
+    body.dark .result-meta, body.dark .result-subdomain, body.dark .result-ts,
+    body.dark .qa-question-ts, body.dark .qa-answer-ts, body.dark .about-date,
+    body.dark .refresh-note { color: #9683b5; }
+    body.dark .result-card, body.dark .qa-card, body.dark .about-card {
+      background: rgba(34,22,58,0.6); border-color: rgba(180,150,220,0.2);
+    }
+    body.dark .qa-question { background: rgba(255,255,255,0.04); border-bottom-color: rgba(180,150,220,0.15); }
+    body.dark .result-domain, body.dark .qa-question-text, body.dark .history-header h2 { color: #d9c4f5; }
+    body.dark .result-title { color: #c8a6ff; }
+    body.dark .result-answer, body.dark .qa-answer-text, body.dark .about-body { color: #efe6fb; }
+    body.dark .about-title, body.dark .qa-question-label { color: #9683b5; }
+    body.dark .about-signature { color: #c8a6ff; }
+    body.dark footer { background: rgba(30,18,54,0.5); border-top-color: rgba(180,150,220,0.18); color: #b49ad6; }
+    body.dark footer a { color: #b49ad6; }
+    body.dark footer a:hover { color: #f1e7ff; }
   </style>
 </head>
 <body>
+<script>try{if(localStorage.getItem('dua-theme')==='dark')document.body.classList.add('dark');}catch(e){}</script>
 
+<canvas id="daySky"></canvas>
+<canvas id="nightSky"></canvas>
 <canvas id="confettiCanvas"></canvas>
 
 <nav>
@@ -207,9 +267,13 @@
   <div class="nav-tabs">
     <button class="nav-tab active" id="tab-home" onclick="showPage('home')">Search</button>
     <button class="nav-tab" id="tab-history" onclick="showPage('history')">My Questions</button>
-    <button class="nav-tab" id="tab-about" onclick="showPage('about')">About 💜</button>
-    <a class="nav-tab" href="games.html">Play 🎮</a>
-    <a class="nav-tab" href="ourspace.html">Our Space ✨</a>
+    <button class="nav-tab" id="tab-about" onclick="showPage('about')">About</button>
+    <a class="nav-tab" href="games.html">Play</a>
+    <a class="nav-tab" href="ourspace.html">Our Space</a>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle night mode" title="Toggle night mode">
+      <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    </button>
   </div>
 </nav>
 
@@ -219,7 +283,7 @@
     <div class="logo">
       <span class="l1">D</span><span class="l2">u</span><span class="l3">a</span><span class="l4">.</span><span class="l5">a</span><span class="l6">i</span>
     </div>
-    <p class="tagline">Ask Dua anything — she'll get back to you 💌</p>
+    <p class="tagline">Ask Dua anything and she'll get back to you 💌</p>
     <div class="search-wrap">
       <div class="search-bar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -544,8 +608,8 @@
     else{c.state='pounce';c.t=24;}}
 
   function step(){frame++;
-    if(toy){toy.x+=toy.vx;toy.y=toy.baseY+Math.sin(frame*0.09)*9;if(--toy.life<=0||toy.x<-20||toy.x>W+20)toy=null;}
-    else if(--toyTimer<=0){toyTimer=500+Math.random()*600;const l=Math.random()<0.5;toy={x:l?-10:W+10,vx:(l?1:-1)*(0.8+Math.random()*0.4),baseY:16+Math.random()*20,y:20,life:650};}
+    if(toy){toy.x+=toy.vx;toy.y=toy.baseY+Math.sin(frame*0.09)*9;if(toy.x<-20||toy.x>W+20)toy=null;} // only leaves once it flies off an edge
+    else if(--toyTimer<=0){toyTimer=500+Math.random()*600;const l=Math.random()<0.5;toy={x:l?-10:W+10,vx:(l?1:-1)*(0.8+Math.random()*0.4),baseY:16+Math.random()*20,y:20};}
     for(const c of cats){
       c.blink=((frame+c.phase*7)%210)<8;
       if(toy){c.dir=toy.x>c.x?1:-1;if(c.state==='sit'){c.state='walk';c.t=50;}
@@ -616,6 +680,160 @@
   window.addEventListener('resize',()=>{resize();for(const c of cats)c.x=Math.min(c.x,W-34);});
   loop();
 })();
+</script>
+
+<!-- ── THEME TOGGLE + PIXEL NIGHT SKY (stars + moon) ── -->
+<script>
+  function toggleTheme(){
+    const dark = !document.body.classList.contains('dark');
+    document.body.classList.toggle('dark', dark);
+    try { localStorage.setItem('dua-theme', dark ? 'dark' : 'light'); } catch(e){}
+  }
+
+  (function(){
+    const cv = document.getElementById('nightSky'); if(!cv) return;
+    const cx = cv.getContext('2d');
+    const P = 3;                       // pixel size (keeps the retro look)
+    let W=0, H=0, stars=[], moon={};
+
+    function build(){
+      stars = [];
+      const count = Math.min(150, Math.floor((W*H)/9000));
+      for(let i=0;i<count;i++){
+        stars.push({
+          x: Math.floor(Math.random()*W),
+          y: Math.floor(Math.random()*H*0.82),        // keep clear of the cats/footer
+          s: Math.random()<0.82 ? 1 : 2,              // small dot vs plus-sparkle
+          base: 0.35 + Math.random()*0.5,
+          sp: 0.6 + Math.random()*1.8,                // twinkle speed
+          ph: Math.random()*Math.PI*2,
+          col: Math.random()<0.85 ? '#ffffff' : (Math.random()<0.5 ? '#ffe9b0' : '#cfe0ff')
+        });
+      }
+      moon.r = Math.max(24, Math.min(46, W*0.028));
+      moon.x = W - Math.max(80, W*0.11);
+      moon.y = Math.max(78, H*0.16);
+    }
+    function resize(){ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; cx.imageSmoothingEnabled=false; build(); }
+    resize(); window.addEventListener('resize', resize);
+
+    function drawMoon(){
+      const {x,y,r}=moon;
+      const g = cx.createRadialGradient(x,y,r*0.4, x,y,r*3);
+      g.addColorStop(0,'rgba(255,244,200,0.35)'); g.addColorStop(1,'rgba(255,244,200,0)');
+      cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,r*3,0,Math.PI*2); cx.fill();
+      // pixel disc
+      cx.fillStyle='#f4ecc4';
+      for(let yy=-r; yy<=r; yy+=P) for(let xx=-r; xx<=r; xx+=P)
+        if(xx*xx+yy*yy<=r*r) cx.fillRect(Math.round(x+xx),Math.round(y+yy),P,P);
+      // craters
+      cx.fillStyle='#d8cb98';
+      const craters=[[-0.32,-0.22,0.17],[0.26,0.12,0.2],[0.08,-0.46,0.11],[-0.12,0.42,0.13]];
+      for(const c of craters){ const mx=x+c[0]*r, my=y+c[1]*r, cr=c[2]*r;
+        for(let yy=-cr; yy<=cr; yy+=P) for(let xx=-cr; xx<=cr; xx+=P)
+          if(xx*xx+yy*yy<=cr*cr) cx.fillRect(Math.round(mx+xx),Math.round(my+yy),P,P);
+      }
+    }
+    function drawStar(st, a){
+      cx.globalAlpha=Math.max(0.05,Math.min(1,a)); cx.fillStyle=st.col;
+      cx.fillRect(st.x, st.y, P, P);
+      if(st.s>1){ // plus-shaped sparkle
+        cx.fillRect(st.x-P, st.y, P, P); cx.fillRect(st.x+P, st.y, P, P);
+        cx.fillRect(st.x, st.y-P, P, P); cx.fillRect(st.x, st.y+P, P, P);
+      }
+    }
+
+    let frame=0;
+    function loop(){
+      frame++;
+      if(document.body.classList.contains('dark')){
+        cx.clearRect(0,0,W,H);
+        drawMoon();
+        for(const st of stars) drawStar(st, st.base + Math.sin(frame*0.03*st.sp + st.ph)*0.4);
+        cx.globalAlpha=1;
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+
+  // ── DAY SKY: pixel sun + drifting pixel clouds (shown in light mode) ──
+  (function(){
+    const cv = document.getElementById('daySky'); if(!cv) return;
+    const cx = cv.getContext('2d');
+    const P = 3;
+    let W=0, H=0, clouds=[], sun={};
+    // 12×6 cloud bitmap (1 = filled) — bumpy top, flat-ish bottom
+    const CLOUD = ["000011100000","001111111000","011111111110","111111111111","111111111111","011111111100"];
+
+    function build(){
+      clouds = [];
+      const n = 4 + Math.floor(W/560);
+      for(let i=0;i<n;i++){
+        clouds.push({
+          x: Math.random()*W,
+          y: 36 + Math.random()*H*0.4,
+          sc: 2 + Math.random()*2.2,      // cell-size multiplier
+          sp: 0.12 + Math.random()*0.26,  // drift speed
+          a: 0.7 + Math.random()*0.25
+        });
+      }
+      sun.r = Math.max(26, Math.min(48, W*0.03));
+      sun.x = W - Math.max(80, W*0.11);
+      sun.y = Math.max(80, H*0.16);
+    }
+    function resize(){ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; cx.imageSmoothingEnabled=false; build(); }
+    resize(); window.addEventListener('resize', resize);
+
+    function drawSun(t){
+      const {x,y,r}=sun, pulse=0.85+Math.sin(t*0.03)*0.15;
+      const g = cx.createRadialGradient(x,y,r*0.5, x,y,r*3.6);
+      g.addColorStop(0,'rgba(255,225,150,'+(0.42*pulse).toFixed(3)+')'); g.addColorStop(1,'rgba(255,225,150,0)');
+      cx.globalAlpha=1; cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,r*3.6,0,Math.PI*2); cx.fill();
+      // slow rays
+      cx.fillStyle='#ffdf8a'; cx.globalAlpha=0.55*pulse;
+      for(let k=0;k<8;k++){ const ang=k*Math.PI/4 + t*0.002;
+        cx.fillRect(Math.round(x+Math.cos(ang)*r*1.55-P), Math.round(y+Math.sin(ang)*r*1.55-P), P*2, P*2); }
+      // pixel disc with a soft top-left highlight
+      cx.globalAlpha=1;
+      for(let yy=-r; yy<=r; yy+=P) for(let xx=-r; xx<=r; xx+=P){
+        if(xx*xx+yy*yy<=r*r){
+          cx.fillStyle = (xx < -r*0.15 && yy < -r*0.15) ? '#fff1bf' : '#ffe08a';
+          cx.fillRect(Math.round(x+xx), Math.round(y+yy), P, P);
+        }
+      }
+    }
+    function drawCloud(cl){
+      const cs = P*cl.sc;
+      for(let r=0;r<CLOUD.length;r++){ const row=CLOUD[r];
+        for(let c=0;c<row.length;c++){
+          if(row[c]==='1'){
+            cx.globalAlpha = cl.a;
+            cx.fillStyle = (r===5) ? '#e9ddf5' : '#ffffff';   // subtle underside shadow
+            cx.fillRect(Math.round(cl.x+c*cs), Math.round(cl.y+r*cs), cs, cs);
+          }
+        }
+      }
+    }
+
+    let frame=0;
+    function loop(){
+      frame++;
+      if(!document.body.classList.contains('dark')){
+        cx.clearRect(0,0,W,H);
+        drawSun(frame);
+        for(const cl of clouds){
+          cl.x += cl.sp;
+          const w = 12*P*cl.sc;
+          if(cl.x > W + w) cl.x = -w;   // wrap around
+          drawCloud(cl);
+        }
+        cx.globalAlpha=1;
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
 </script>
 </body>
 </html>
